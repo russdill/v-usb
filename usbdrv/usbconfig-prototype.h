@@ -215,6 +215,12 @@ section at the end of this file).
  * may be worth the 32 bytes bigger code size if you transmit lots of data and
  * run the AVR close to its limit.
  */
+#define USB_CFG_IMPLEMENT_REMOTE_WAKE      0
+/* define this macro to 1 to implement remote wake capability. The remoteWake
+ * variable will be set to non-zero when the host enables remote wake. The
+ * macro usbDeviceWakeStart() should be used to start a remote wake and
+ * the macro usbDeviceWakeEnd() should be used when the remote wake is complete
+ */
 
 /* -------------------------- Device Description --------------------------- */
 

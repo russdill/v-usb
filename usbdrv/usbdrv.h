@@ -215,6 +215,8 @@ extern uchar usbMsgFlags;    /* flag values see USB_FLG_* */
  * address.
  */
 
+extern uchar remoteWake;
+
 #define USB_FLG_MSGPTR_IS_ROM   (1<<6)
 
 USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]);
@@ -328,6 +330,10 @@ USB_PUBLIC void usbFunctionWriteOut(uchar *data, uchar len);
 #define usbDeviceConnect()      (USBDDR &= ~(1<<USBMINUS))
 #define usbDeviceDisconnect()   (USBDDR |= (1<<USBMINUS))
 #endif /* USB_CFG_PULLUP_IOPORTNAME */
+
+#define usbDeviceWakeStart()	((USBOUT |= (1<<USBPLUS)), (USBDDR |= USBMASK))
+#define usbDeviceWakeEnd()	((USBDDR &= ~USBMASK), (USBOUT &= ~(1<<USBPLUS)))
+
 /* The macros usbDeviceConnect() and usbDeviceDisconnect() (intended to look
  * like a function) connect resp. disconnect the device from the host's USB.
  * If the constants USB_CFG_PULLUP_IOPORT and USB_CFG_PULLUP_BIT are defined

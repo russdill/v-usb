@@ -49,6 +49,10 @@ uchar               usbMsgFlags;    /* flag values see USB_FLG_* */
 
 #define USB_FLG_USE_USER_RW     (1<<7)
 
+#if USB_CFG_IMPLEMENT_REMOTE_WAKE
+uchar remoteWake;
+#endif
+
 /*
 optimizing hints:
 - do not post/pre inc/dec integer values in operations
@@ -377,7 +381,11 @@ uchar   index = rq->wIndex.bytes[0];
     SWITCH_CASE(USBRQ_GET_STATUS)           /* 0 */
         uchar recipient = rq->bmRequestType & USBRQ_RCPT_MASK;  /* assign arith ops to variables to enforce byte size */
         if(USB_CFG_IS_SELF_POWERED && recipient == USBRQ_RCPT_DEVICE)
+#if USB_CFG_IMPLEMENT_REMOTE_WAKE
+            dataPtr[0] =  USB_CFG_IS_SELF_POWERED | (remoteWake ? _BV(1) : 0);
+#else
             dataPtr[0] =  USB_CFG_IS_SELF_POWERED;
+#endif
 #if USB_CFG_IMPLEMENT_HALT
         if(recipient == USBRQ_RCPT_ENDPOINT && index == 0x81)   /* request status for endpoint 1 */
             dataPtr[0] = usbTxLen1 == USBPID_STALL;
@@ -390,6 +398,14 @@ uchar   index = rq->wIndex.bytes[0];
             usbTxLen1 = rq->bRequest == USBRQ_CLEAR_FEATURE ? USBPID_NAK : USBPID_STALL;
             usbResetDataToggling();
         }
+#endif
+#if USB_CFG_IMPLEMENT_REMOTE_WAKE
+    SWITCH_CASE(USBRQ_SET_FEATURE)    /* 3 */
+        if (value == 1)
+            remoteWake = value;
+    SWITCH_CASE(USBRQ_CLEAR_FEATURE)    /* 1 */
+        if (value == 1)
+            remoteWake = 0;
 #endif
     SWITCH_CASE(USBRQ_SET_ADDRESS)          /* 5 */
         usbNewDeviceAddr = value;
@@ -605,6 +621,9 @@ uchar   i;
     /* RESET condition, called multiple times during reset */
     usbNewDeviceAddr = 0;
     usbDeviceAddr = 0;
+#if USB_CFG_IMPLEMENT_REMOTE_WAKE
+    remoteWake = 0;
+#endif
     usbResetStall();
     DBG1(0xff, 0, 0);
 isNotReset:
