@@ -605,7 +605,9 @@ uchar           isReset = !notResetState;
 
 /* ------------------------------------------------------------------------- */
 
-#if USB_CFG_MODE_IRQ
+#if USB_CFG_MODE_IRQLESS && USB_CFG_MODE_IRQ
+#define irqModeEnabled() (USB_MODE_IRQ_GPIOR & _BV(USB_MODE_IRQ_GPIOR_BIT))
+#elif USB_CFG_MODE_IRQ
 #define irqModeEnabled() (1)
 #else
 #define irqModeEnabled() (0)

@@ -113,6 +113,9 @@ doReturn:
     rjmp    waitForJ            ;[51] save the pops and pushes -- a new interrupt is already pending
 sofError:
     POP_RETI                    ;macro call
+#if USB_CFG_MODE_IRQLESS && USB_CFG_MODE_IRQ
+    sbic    USB_MODE_IRQ_GPIOR, USB_MODE_IRQ_GPIOR_BIT ; Check interrupt-less mode setting
+#endif
 #if USB_CFG_MODE_IRQLESS
     ret                         ; Using polling, leave interrupts disabled
 #endif

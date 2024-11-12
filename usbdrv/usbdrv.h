@@ -661,9 +661,7 @@ int usbDescriptorStringSerialNumber[];
 #error "IRQ mode configuration required"
 #endif
 
-#if USB_CFG_MODE_IRQLESS && USB_CFG_MODE_IRQ
-#   define USB_IRQLESS_GPIOR USB_GPIOR(USB_IRQLESS_GPIOR_IDX)
-#endif
+#define USB_MODE_IRQ_GPIOR USB_GPIOR(USB_MODE_IRQ_GPIOR_IDX)
 
 /*
 The defines above don't work for the following chips

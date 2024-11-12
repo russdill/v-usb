@@ -403,5 +403,15 @@ section at the end of this file).
  *     https://cpldcpu.wordpress.com/2014/03/02/interrupt-free-v-usb/
  * This costs about an extra 20 bytes over IRQ mode.
  */
+/* #define USB_MODE_IRQ_GPIOR_IDX   2 */
+/* Assign a GPIORn register and bit (in USB_IRQLESS_GPIOR_BIT) to switch
+ * between interrupt-free and IRQ mode. Setting the bit enables interrupt-free
+ * mode which includes additional code in usbPoll and a ret rather than reti
+ * from the IRQ handler. Enabling both IRQ modes adds about 48 bytes above
+ * what is required by just IRQ mode.
+ */
+/* #define USB_MODE_IRQ_GPIOR_BIT   0 */
+/* The bit within the selected GPIORn register as mentioned above
+ */
 
 #endif /* __usbconfig_h_included__ */
