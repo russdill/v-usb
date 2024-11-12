@@ -27,7 +27,7 @@ uchar       usbConfiguration;   /* currently selected configuration. Administere
 volatile schar usbRxLen;        /* = 0; number of bytes in usbRxBuf; 0 means free, -1 for flow control */
 uchar       usbCurrentTok;      /* last token received or endpoint number for last OUT token if != 0 */
 uchar       usbRxToken;         /* token for data we received; or endpont number for last OUT */
-volatile uchar usbTxLen = USBPID_NAK;   /* number of bytes to transmit with next IN token or handshake token */
+volatile uchar usbTxLen;        /* number of bytes to transmit with next IN token or handshake token */
 uchar       usbTxBuf[USB_BUFSIZE];/* data to transmit with next IN, free if usbTxLen contains handshake token */
 #if USB_COUNT_SOF
 volatile uchar  usbSofCount;    /* incremented by assembler module every SOF */
@@ -44,10 +44,14 @@ uchar       usbCurrentDataToken;/* when we check data toggling to ignore duplica
 
 /* USB status registers / not shared with asm code */
 usbMsgPtr_t         usbMsgPtr;      /* data to transmit next -- ROM or RAM address */
-static usbMsgLen_t  usbMsgLen = USB_NO_MSG; /* remaining number of bytes */
+static usbMsgLen_t  usbMsgLen;      /* remaining number of bytes */
 uchar               usbMsgFlags;    /* flag values see USB_FLG_* */
 
 #define USB_FLG_USE_USER_RW     (1<<7)
+
+#if USB_RESET_HOOK
+uchar               usbWasReset;
+#endif
 
 #if USB_CFG_IMPLEMENT_REMOTE_WAKE
 uchar remoteWake;
@@ -573,12 +577,11 @@ uchar       len;
 static inline void usbHandleResetHook(uchar notResetState)
 {
 #ifdef USB_RESET_HOOK
-static uchar    wasReset;
 uchar           isReset = !notResetState;
 
-    if(wasReset != isReset){
+    if(usbWasReset != isReset){
         USB_RESET_HOOK(isReset);
-        wasReset = isReset;
+        usbWasReset = isReset;
     }
 #else
     notResetState = notResetState;  // avoid compiler warning
@@ -634,6 +637,10 @@ isNotReset:
 
 USB_PUBLIC void usbInit(void)
 {
+#ifdef USB_RESET_HOOK
+    usbWasReset = 0;
+#endif
+    usbMsgLen = USB_NO_MSG;
 #if USB_INTR_CFG_SET != 0
     USB_INTR_CFG |= USB_INTR_CFG_SET;
 #endif
@@ -642,6 +649,7 @@ USB_PUBLIC void usbInit(void)
 #endif
     USB_INTR_ENABLE |= (1 << USB_INTR_ENABLE_BIT);
     usbResetDataToggling();
+    usbTxLen = USBPID_NAK;
 #if USB_CFG_HAVE_INTRIN_ENDPOINT && !USB_CFG_SUPPRESS_INTR_CODE
     usbTxLen1 = USBPID_NAK;
 #if USB_CFG_HAVE_INTRIN_ENDPOINT3
