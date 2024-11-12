@@ -228,6 +228,13 @@ section at the end of this file).
 /* define this macro to 1 to enable reading out of EEPROM when
  * USB_FLG_MSGPTR_IS_EEPROM is used.
  */
+/* #define USB_MSGFLAGS_REG                   r6 */
+/* Assign a register to store usbMsgFlags. This can save about 16 bytes
+ */
+/* #define USB_MSGLEN_REG                     r7 */
+/* Assign a register to store usbMsgLen. This can save about 12 bytes. Note
+ * that enabling this option is not compatible with USB_CFG_LONG_TRANSEFRS.
+ */
 
 /* -------------------------- Device Description --------------------------- */
 

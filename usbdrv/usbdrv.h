@@ -208,12 +208,25 @@ extern usbMsgPtr_t usbMsgPtr;
  * implementation of usbFunctionWrite(). It is also used internally by the
  * driver for standard control requests.
  */
+#define __S(n) #n
+#define _S(n) __S(n)
 
+#if defined(USB_MSGLEN_REG)
+register usbMsgLen_t  usbMsgLen asm(_S(USB_MSGLEN_REG));  /* remaining number of bytes */
+#endif
+
+#ifdef USB_MSGFLAGS_REG
+register uchar usbMsgFlags asm(_S(USB_MSGFLAGS_REG));
+#else
 extern uchar usbMsgFlags;    /* flag values see USB_FLG_* */
 /* Can be set to `USB_FLG_MSGPTR_IS_ROM` in `usbFunctionSetup()` or
  * `usbFunctionDescriptor()` if `usbMsgPtr` has been set to a flash memory
  * address.
  */
+#endif
+
+#undef __S
+#undef _S
 
 extern uchar remoteWake;
 

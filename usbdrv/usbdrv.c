@@ -52,10 +52,18 @@ usbTxStatus_t  usbTxStatus3;
 uchar       usbCurrentDataToken;/* when we check data toggling to ignore duplicate packets */
 #endif
 
+#if defined(USB_MSGLEN_REG) && USB_CFG_LONG_TRANSEFRS
+#error USB_MSGLEN_REG not supported with USB_CFG_LONG_TRANSEFRS
+#endif
+
 /* USB status registers / not shared with asm code */
 usbMsgPtr_t         usbMsgPtr;      /* data to transmit next -- ROM or RAM address */
+#if !defined(USB_MSGLEN_REG)
 static usbMsgLen_t  usbMsgLen;      /* remaining number of bytes */
+#endif
+#ifndef USB_MSGFLAGS_REG
 uchar               usbMsgFlags;    /* flag values see USB_FLG_* */
+#endif
 
 #define USB_FLG_USE_USER_RW     (1<<7)
 
