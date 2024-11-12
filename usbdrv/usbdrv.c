@@ -605,10 +605,17 @@ uchar           isReset = !notResetState;
 
 /* ------------------------------------------------------------------------- */
 
+#if USB_CFG_MODE_IRQ
+#define irqModeEnabled() (1)
+#else
+#define irqModeEnabled() (0)
+#endif
+
 USB_PUBLIC void usbPoll(void)
 {
 schar   len;
-uchar   i;
+uint16_t fastctr;
+uchar resetctr;
 
     len = usbRxLen - 3;
     if(len >= 0){
@@ -631,21 +638,70 @@ uchar   i;
             usbBuildTxBlock();
         }
     }
-    for(i = 20; i > 0; i--){
-        uchar usbLineStatus = USBIN & USBMASK;
-        if(usbLineStatus != 0)  /* SE0 has ended */
-            goto isNotReset;
+
+#if USB_CFG_MODE_IRQLESS
+    /*
+     * Test whether another interrupt occurred during the
+     * processing of usbpoll and commands. If yes, we missed a
+     * data packet on the bus. Wait until the bus was idle for
+     * 8.8µs to allow synchronising to the next incoming packet.
+     */
+    if (USB_INTR_PENDING & _BV(USB_INTR_PENDING_BIT)) {
+        /* usbpoll() collided with data packet */
+        uint8_t ctr;
+
+        /* Loop takes 5 cycles */
+        asm volatile(
+            "       ldi  %0, %1\n"
+            "1:     sbis %2, %3\n"
+            "       ldi  %0, %1\n"
+            "       subi %0, 1\n"
+            "       brne 1b\n" : "=&d" (ctr) :
+                    "M" ((uint8_t) (8.8 * F_CPU / 5.0e6 + 0.5)),
+                    "I" (_SFR_IO_ADDR(USBIN)),
+                    "M" (USB_CFG_DMINUS_BIT)
+        );
+
+        USB_INTR_PENDING = _BV(USB_INTR_PENDING_BIT);
     }
-    /* RESET condition, called multiple times during reset */
-    usbNewDeviceAddr = 0;
-    usbDeviceAddr = 0;
-#if USB_CFG_IMPLEMENT_REMOTE_WAKE
-    remoteWake = 0;
 #endif
-    usbResetStall();
-    DBG1(0xff, 0, 0);
-isNotReset:
-    usbHandleResetHook(i);
+
+    if (irqModeEnabled()) {
+        fastctr = F_CPU / (1000.0 * 15.0 / 5.0);
+        resetctr = 100;
+    } else {
+        fastctr = 20;
+        resetctr = 20;
+    }
+
+    while (fastctr--) {
+        if (USBIN & USBMASK)
+            resetctr = 100;
+
+        /* reset encountered */
+        if (!--resetctr) {
+            usbNewDeviceAddr = 0;
+            usbDeviceAddr = 0;
+#if USB_CFG_IMPLEMENT_REMOTE_WAKE
+            remoteWake = 0;
+#endif
+            usbResetStall();
+            DBG1(0xff, 0, 0);
+        }
+        usbHandleResetHook(resetctr);
+
+#ifdef USB_CFG_MODE_IRQLESS
+        if (USB_INTR_PENDING & _BV(USB_INTR_PENDING_BIT)) {
+
+            USB_INTR_VECTOR();
+
+            /* Clear int pending, in case timeout occured during SYNC */
+            USB_INTR_PENDING = _BV(USB_INTR_PENDING_BIT);
+
+            break;
+        }
+#endif
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -662,7 +718,9 @@ USB_PUBLIC void usbInit(void)
 #if USB_INTR_CFG_CLR != 0
     USB_INTR_CFG &= ~(USB_INTR_CFG_CLR);
 #endif
+#if USB_CFG_MODE_IRQ
     USB_INTR_ENABLE |= (1 << USB_INTR_ENABLE_BIT);
+#endif
     usbResetDataToggling();
     usbTxLen = USBPID_NAK;
 #if USB_CFG_HAVE_INTRIN_ENDPOINT && !USB_CFG_SUPPRESS_INTR_CODE

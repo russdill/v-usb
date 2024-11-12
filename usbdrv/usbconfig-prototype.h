@@ -394,4 +394,14 @@ section at the end of this file).
 /* #define USB_INTR_PENDING_BIT    INTF0 */
 /* #define USB_INTR_VECTOR         INT0_vect */
 
+#define USB_CFG_MODE_IRQ           1
+/* Enable operation using an IRQ handler for detecting the start of USB
+ * packets. This currently produces the most compact code. */
+/* #define USB_CFG_MODE_IRQLESS    0 */
+/* Enable interrupt-free operation using checking of pin-state within
+ * usbPoll as initially developed by:
+ *     https://cpldcpu.wordpress.com/2014/03/02/interrupt-free-v-usb/
+ * This costs about an extra 20 bytes over IRQ mode.
+ */
+
 #endif /* __usbconfig_h_included__ */

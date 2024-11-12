@@ -84,7 +84,21 @@ se0:
 ;Setup and Out are followed by a data packet two bit times (16 cycles) after
 ;the end of SE0. The sync code allows up to 40 cycles delay from the start of
 ;the sync pattern until the first bit is sampled. That's a total of 56 cycles.
+
+;TB 2014-02-02
+;The interrupt-less driver always has to wait for the next packet at this point
+;or usbpoll() will get confused.
 handleSetupOrOut:               ;[32]
+#if USB_CFG_MODE_IRQLESS
+    ldi     YL, 10              ; Time out
+1:  USB_LOAD_PENDING(x2)        ;[xx]
+    sbrc    x2, USB_INTR_PENDING_BIT;[xx] check whether data is already arriving
+    rjmp    1f
+    dec     YL
+    brne    1b
+1:
+#endif
+
 #if USB_CFG_IMPLEMENT_FN_WRITEOUT   /* if we have data for endpoint != 0, set usbCurrentTok to address */
     andi    x3, 0xf             ;[32]
     breq    storeTokenAndReturn ;[33]
@@ -99,7 +113,12 @@ doReturn:
     rjmp    waitForJ            ;[51] save the pops and pushes -- a new interrupt is already pending
 sofError:
     POP_RETI                    ;macro call
-    reti
+#if USB_CFG_MODE_IRQLESS
+    ret                         ; Using polling, leave interrupts disabled
+#endif
+#if USB_CFG_MODE_IRQ
+    reti                        ; otherwise, enable interrupts when done
+#endif
 
 handleData:
 #if USB_CFG_CHECK_CRC

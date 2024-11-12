@@ -541,6 +541,7 @@ int usbDescriptorStringSerialNumber[];
 #define USB_OUTPORT(name)           USB_CONCAT(PORT, name)
 #define USB_INPORT(name)            USB_CONCAT(PIN, name)
 #define USB_DDRPORT(name)           USB_CONCAT(DDR, name)
+#define USB_GPIOR(name)             USB_CONCAT(GPIOR, name)
 /* The double-define trick above lets us concatenate strings which are
  * defined by macros.
  */
@@ -648,6 +649,20 @@ int usbDescriptorStringSerialNumber[];
 #endif
 #ifndef USB_INTR_PENDING_BIT    /* allow user to override our default */
 #   define USB_INTR_PENDING_BIT INTF0
+#endif
+
+#ifndef USB_CFG_MODE_IRQLESS
+#   define USB_CFG_MODE_IRQLESS 0
+#endif
+#ifndef USB_CFG_MODE_IRQ
+#   define USB_CFG_MODE_IRQ 1
+#endif
+#if !USB_CFG_MODE_IRQLESS && !USB_CFG_MODE_IRQ
+#error "IRQ mode configuration required"
+#endif
+
+#if USB_CFG_MODE_IRQLESS && USB_CFG_MODE_IRQ
+#   define USB_IRQLESS_GPIOR USB_GPIOR(USB_IRQLESS_GPIOR_IDX)
 #endif
 
 /*
