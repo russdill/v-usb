@@ -252,6 +252,13 @@ USB_PUBLIC usbMsgLen_t usbFunctionDescriptor(struct usbRequest *rq);
  * usbFunctionSetup() above, but it is called only to request USB descriptor
  * data. See the documentation of usbFunctionSetup() above for more info.
  */
+#if USB_CFG_CUSTOM_DRIVER_DESCRIPTOR
+USB_PUBLIC usbMsgLen_t usbCustomDriverDescriptor(struct usbRequest *rq);
+/* Completely replace existing descriptor framework with single function
+ * call.
+ */
+#endif
+
 #if USB_CFG_HAVE_INTRIN_ENDPOINT
 USB_PUBLIC void usbSetInterrupt(uchar *data, uchar len);
 /* This function sets the message which will be sent during the next interrupt

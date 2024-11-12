@@ -292,6 +292,10 @@ section at the end of this file).
  * "usbHidReportDescriptor" to your code which contains the report descriptor.
  * Don't forget to keep the array and this define in sync!
  */
+/* #define USB_CFG_CUSTOM_DRIVER_DESCRIPTOR   0 */
+/* define this macro to 1 to opt-out out of the built-in USB descriptor
+ * functionality and instead implement a completely custom implementation.
+ */
 
 /* #define USB_PUBLIC static */
 /* Use the define above if you #include usbdrv.c instead of linking against it.

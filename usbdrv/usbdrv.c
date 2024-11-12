@@ -65,6 +65,7 @@ optimizing hints:
 - assign char sized expressions to variables to force 8 bit arithmetics
 */
 
+#if USB_CFG_CUSTOM_DRIVER_DESCRIPTOR == 0
 /* -------------------------- String Descriptors --------------------------- */
 
 #if USB_CFG_DESCR_PROPS_STRINGS == 0
@@ -198,6 +199,8 @@ PROGMEM const char usbDescriptorConfiguration[] = {    /* USB configuration desc
 };
 #endif
 
+#endif /* USB_CFG_CUSTOM_DRIVER_DESCRIPTOR == 0 */
+
 /* ------------------------------------------------------------------------- */
 
 static inline void  usbResetDataToggling(void)
@@ -316,6 +319,9 @@ USB_PUBLIC void usbSetInterrupt3(uchar *data, uchar len)
  */
 static inline usbMsgLen_t usbDriverDescriptor(usbRequest_t *rq)
 {
+#if USB_CFG_CUSTOM_DRIVER_DESCRIPTOR
+    return usbCustomDriverDescriptor(rq);
+#else
 usbMsgLen_t len = 0;
 uchar       flags = USB_FLG_MSGPTR_IS_ROM;
 
@@ -364,6 +370,7 @@ uchar       flags = USB_FLG_MSGPTR_IS_ROM;
     SWITCH_END
     usbMsgFlags = flags;
     return len;
+#endif
 }
 
 /* ------------------------------------------------------------------------- */
