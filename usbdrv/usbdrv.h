@@ -217,7 +217,8 @@ extern uchar usbMsgFlags;    /* flag values see USB_FLG_* */
 
 extern uchar remoteWake;
 
-#define USB_FLG_MSGPTR_IS_ROM   (1<<6)
+#define USB_FLG_MSGPTR_IS_EEPROM (1<<6)
+#define USB_FLG_MSGPTR_IS_ROM   (1<<0)
 
 USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]);
 /* This function is called when the driver receives a SETUP transaction from

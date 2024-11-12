@@ -224,6 +224,10 @@ section at the end of this file).
  * macro usbDeviceWakeStart() should be used to start a remote wake and
  * the macro usbDeviceWakeEnd() should be used when the remote wake is complete
  */
+/* #define USB_CFG_MSGPTR_EEPROM           0 */
+/* define this macro to 1 to enable reading out of EEPROM when
+ * USB_FLG_MSGPTR_IS_EEPROM is used.
+ */
 
 /* -------------------------- Device Description --------------------------- */
 

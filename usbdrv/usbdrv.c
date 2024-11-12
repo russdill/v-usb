@@ -546,6 +546,19 @@ static uchar usbDeviceRead(uchar *data, uchar len)
                 uchar c;
                 if(usbMsgFlags & USB_FLG_MSGPTR_IS_ROM){    /* ROM data */
                     c = USB_READ_FLASH(r);    /* assign to char size variable to enforce byte ops */
+#if USB_CFG_MSGPTR_EEPROM
+                }else if (usbMsgFlags & USB_FLG_MSGPTR_IS_EEPROM){
+#ifdef EEARH
+#if E2END > 0xff
+                    EEARH = ((uint16_t) r) >> 8;
+#else
+                    EEARH = 0;
+#endif
+#endif
+                    EEARL = ((uint16_t) r) & 0xff;
+                    EECR |= _BV(EERE);
+                    c = EEDR;
+#endif
                 }else{  /* RAM data */
                     c = *((uchar *)r);
                 }
