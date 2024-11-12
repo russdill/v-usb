@@ -39,7 +39,6 @@ the file appropriate for the given clock rate.
 #   if USB_COUNT_SOF
         extern usbSofCount
 #   endif
-    public  usbCrc16
     public  usbCrc16Append
 
     COMMON  INTVEC
@@ -65,7 +64,6 @@ the file appropriate for the given clock rate.
     .text
     .global USB_INTR_VECTOR
     .type   USB_INTR_VECTOR, @function
-    .global usbCrc16
     .global usbCrc16Append
 #endif /* __IAR_SYSTEMS_ASM__ */
 
@@ -175,7 +173,7 @@ RTMODEL "__rt_version", "3"
 ;   scratch r23
 ;   resCrc  r24+r25 / r16+r17
 ;   ptr     X / Z
-usbCrc16:
+usbCrc16Append:
     movw    ptrL, argPtrL
     ldi     resCrcL, 0xFF
     ldi     resCrcH, 0xFF
@@ -208,6 +206,8 @@ usbCrc16LoopTest:
     brsh    usbCrc16ByteLoop
     com     resCrcL
     com     resCrcH
+    st      ptr+, resCrcL
+    st      ptr+, resCrcH
     ret
 
 #else   /* USB_USE_FAST_CRC */
@@ -224,9 +224,8 @@ usbCrc16LoopTest:
 ;   scratch r23
 ;   resCrc  r24+r25 / r16+r17
 ;   ptr     X / Z
-usbCrc16:
-    mov     ptrL, argPtrL
-    mov     ptrH, argPtrH
+usbCrc16Append:
+    movw    ptrL, argPtrL
     ldi     resCrcL, 0
     ldi     resCrcH, 0
     ldi     polyL, lo8(0xa001)
@@ -250,17 +249,12 @@ usbCrcLoopEntry:
     subi    argLen, -1
     brcs    usbCrcByteLoop
 usbCrcReady:
+    st      ptr+, resCrcL
+    st      ptr+, resCrcH
     ret
 ; Thanks to Reimar Doeffinger for optimizing this CRC routine!
 
 #endif /* USB_USE_FAST_CRC */
-
-; extern unsigned usbCrc16Append(unsigned char *data, unsigned char len);
-usbCrc16Append:
-    rcall   usbCrc16
-    st      ptr+, resCrcL
-    st      ptr+, resCrcH
-    ret
 
 #undef argLen
 #undef argPtrL

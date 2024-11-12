@@ -346,14 +346,6 @@ USB_PUBLIC void usbFunctionWriteOut(uchar *data, uchar len);
  *     USB_INTR_ENABLE &= ~(1 << USB_INTR_ENABLE_BIT)
  * or use cli() to disable interrupts globally.
  */
-extern unsigned usbCrc16(unsigned data, uchar len);
-#define usbCrc16(data, len) usbCrc16((unsigned)(data), len)
-/* This function calculates the binary complement of the data CRC used in
- * USB data packets. The value is used to build raw transmit packets.
- * You may want to use this function for data checksums or to verify received
- * data. We enforce 16 bit calling conventions for compatibility with IAR's
- * tiny memory model.
- */
 extern unsigned usbCrc16Append(unsigned data, uchar len);
 #define usbCrc16Append(data, len)    usbCrc16Append((unsigned)(data), len)
 /* This function is equivalent to usbCrc16() above, except that it appends
