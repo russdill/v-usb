@@ -10,6 +10,16 @@
 #include "usbdrv.h"
 #include "oddebug.h"
 
+#if defined (SPMCSR)
+#  define __SPM_REG    SPMCSR
+#else
+#  if defined (SPMCR)
+#    define __SPM_REG    SPMCR
+#  else
+#    error AVR processor does not provide bootloader support!
+#  endif
+#endif
+
 /*
 General Description:
 This module implements the C-part of the USB driver. See usbdrv.h for a
@@ -545,6 +555,7 @@ static uchar usbDeviceRead(uchar *data, uchar len)
             do{
                 uchar c;
                 if(usbMsgFlags & USB_FLG_MSGPTR_IS_ROM){    /* ROM data */
+                    __SPM_REG = usbMsgFlags;
                     c = USB_READ_FLASH(r);    /* assign to char size variable to enforce byte ops */
 #if USB_CFG_MSGPTR_EEPROM
                 }else if (usbMsgFlags & USB_FLG_MSGPTR_IS_EEPROM){
