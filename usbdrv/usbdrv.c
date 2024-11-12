@@ -540,18 +540,16 @@ static uchar usbDeviceRead(uchar *data, uchar len)
         {
             uchar i = len;
             usbMsgPtr_t r = usbMsgPtr;
-            if(usbMsgFlags & USB_FLG_MSGPTR_IS_ROM){    /* ROM data */
-                do{
-                    uchar c = USB_READ_FLASH(r);    /* assign to char size variable to enforce byte ops */
-                    *data++ = c;
-                    r++;
-                }while(--i);
-            }else{  /* RAM data */
-                do{
-                    *data++ = *((uchar *)r);
-                    r++;
-                }while(--i);
-            }
+            do{
+                uchar c;
+                if(usbMsgFlags & USB_FLG_MSGPTR_IS_ROM){    /* ROM data */
+                    c = USB_READ_FLASH(r);    /* assign to char size variable to enforce byte ops */
+                }else{  /* RAM data */
+                    c = *((uchar *)r);
+                }
+                *data++ = c;
+                r++;
+            }while(--i);
             usbMsgPtr = r;
         }
     }
