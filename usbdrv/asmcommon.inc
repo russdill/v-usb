@@ -117,10 +117,14 @@ sofError:
     sbic    USB_MODE_IRQ_GPIOR, USB_MODE_IRQ_GPIOR_BIT ; Check interrupt-less mode setting
 #endif
 #if USB_CFG_MODE_IRQLESS
-    ret                         ; Using polling, leave interrupts disabled
+    ret                         ; Using polling, leave interrupts disabled (don't chain when polling)
 #endif
 #if USB_CFG_MODE_IRQ
+#ifdef USB_INTR_CHAIN
+    USB_INTR_CHAIN
+#else
     reti                        ; otherwise, enable interrupts when done
+#endif
 #endif
 
 handleData:

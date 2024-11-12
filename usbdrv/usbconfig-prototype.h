@@ -413,5 +413,10 @@ section at the end of this file).
 /* #define USB_MODE_IRQ_GPIOR_BIT   0 */
 /* The bit within the selected GPIORn register as mentioned above
  */
+/* #define USB_INTR_CHAIN           rjmp chained_vector */
+/* If defined a chained interrupt handler is called at the end of the V-USB
+ * handler rather than the reti instruction. The chained handler must invoke
+ * reti. This chained handler is not called in interrupt-free mode.
+ */
 
 #endif /* __usbconfig_h_included__ */
