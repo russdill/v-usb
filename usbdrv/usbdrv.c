@@ -492,6 +492,7 @@ usbRequest_t    *rq = (void *)data;
 #if USB_CFG_IMPLEMENT_FN_READ || USB_CFG_IMPLEMENT_FN_WRITE
         if(replyLen == USB_NO_MSG){         /* use user-supplied read/write function */
             /* do some conditioning on replyLen, but on IN transfers only */
+#if USB_CFG_IMPLEMENT_FN_READ
             if((rq->bmRequestType & USBRQ_DIR_MASK) != USBRQ_DIR_HOST_TO_DEVICE){
                 if(sizeof(replyLen) < sizeof(rq->wLength.word)){ /* help compiler with optimizing */
                     replyLen = rq->wLength.bytes[0];
@@ -499,6 +500,7 @@ usbRequest_t    *rq = (void *)data;
                     replyLen = rq->wLength.word;
                 }
             }
+#endif
             usbMsgFlags = USB_FLG_USE_USER_RW;
         }else   /* The 'else' prevents that we limit a replyLen of USB_NO_MSG to the maximum transfer len. */
 #endif
