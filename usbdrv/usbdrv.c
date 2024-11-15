@@ -137,6 +137,14 @@ PROGMEM const char usbDescriptorDevice[] = {    /* USB device descriptor */
 
 /* ----------------------- Configuration Descriptor ------------------------ */
 
+#if USB_CFG_SUPPRESS_INTRIN_ENDPOINTS
+#define USB_CFG_HAVE_INTRIN_ENDPOINT_DESC 0
+#define USB_CFG_HAVE_INTRIN_ENDPOINT3_DESC 0
+#else
+#define USB_CFG_HAVE_INTRIN_ENDPOINT_DESC USB_CFG_HAVE_INTRIN_ENDPOINT
+#define USB_CFG_HAVE_INTRIN_ENDPOINT3_DESC USB_CFG_HAVE_INTRIN_ENDPOINT3
+#endif
+
 #if USB_CFG_DESCR_PROPS_HID_REPORT != 0 && USB_CFG_DESCR_PROPS_HID == 0
 #undef USB_CFG_DESCR_PROPS_HID
 #define USB_CFG_DESCR_PROPS_HID     9   /* length of HID descriptor in config descriptor below */
@@ -148,7 +156,7 @@ PROGMEM const char usbDescriptorDevice[] = {    /* USB device descriptor */
 PROGMEM const char usbDescriptorConfiguration[] = {    /* USB configuration descriptor */
     9,          /* sizeof(usbDescriptorConfiguration): length of descriptor in bytes */
     USBDESCR_CONFIG,    /* descriptor type */
-    18 + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT3 +
+    18 + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT_DESC + 7 * USB_CFG_HAVE_INTRIN_ENDPOINT3_DESC +
                 (USB_CFG_DESCR_PROPS_HID & 0xff), 0,
                 /* total length of data returned (including inlined descriptors) */
     1,          /* number of interfaces in this configuration */
@@ -165,7 +173,7 @@ PROGMEM const char usbDescriptorConfiguration[] = {    /* USB configuration desc
     USBDESCR_INTERFACE, /* descriptor type */
     0,          /* index of this interface */
     0,          /* alternate setting for this interface */
-    USB_CFG_HAVE_INTRIN_ENDPOINT + USB_CFG_HAVE_INTRIN_ENDPOINT3, /* endpoints excl 0: number of endpoint descriptors to follow */
+    USB_CFG_HAVE_INTRIN_ENDPOINT_DESC + USB_CFG_HAVE_INTRIN_ENDPOINT3_DESC, /* endpoints excl 0: number of endpoint descriptors to follow */
     USB_CFG_INTERFACE_CLASS,
     USB_CFG_INTERFACE_SUBCLASS,
     USB_CFG_INTERFACE_PROTOCOL,
@@ -180,7 +188,7 @@ PROGMEM const char usbDescriptorConfiguration[] = {    /* USB configuration desc
     (USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH & 0xFF), /* descriptor length (low byte) */
     ((USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH >> 8) & 0xFF), /*            (high byte) */
 #endif
-#if USB_CFG_HAVE_INTRIN_ENDPOINT    /* endpoint descriptor for endpoint 1 */
+#if USB_CFG_HAVE_INTRIN_ENDPOINT_DESC    /* endpoint descriptor for endpoint 1 */
     7,          /* sizeof(usbDescrEndpoint) */
     USBDESCR_ENDPOINT,  /* descriptor type = endpoint */
     (char)0x81, /* IN endpoint number 1 */
@@ -188,7 +196,7 @@ PROGMEM const char usbDescriptorConfiguration[] = {    /* USB configuration desc
     8, 0,       /* maximum packet size */
     USB_CFG_INTR_POLL_INTERVAL, /* in ms */
 #endif
-#if USB_CFG_HAVE_INTRIN_ENDPOINT3   /* endpoint descriptor for endpoint 3 */
+#if USB_CFG_HAVE_INTRIN_ENDPOINT3_DESC   /* endpoint descriptor for endpoint 3 */
     7,          /* sizeof(usbDescrEndpoint) */
     USBDESCR_ENDPOINT,  /* descriptor type = endpoint */
     (char)(0x80 | USB_CFG_EP3_NUMBER), /* IN endpoint number 3 */
