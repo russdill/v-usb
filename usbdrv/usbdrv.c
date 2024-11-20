@@ -91,10 +91,9 @@ optimizing hints:
 #if USB_CFG_DESCR_PROPS_STRING_0 == 0
 #undef USB_CFG_DESCR_PROPS_STRING_0
 #define USB_CFG_DESCR_PROPS_STRING_0    sizeof(usbDescriptorString0)
-PROGMEM const char usbDescriptorString0[] = { /* language descriptor */
-    4,          /* sizeof(usbDescriptorString0): length of descriptor in bytes */
-    3,          /* descriptor type */
-    0x09, 0x04, /* language index (0x0409 = US-English) */
+PROGMEM const int  usbDescriptorString0[] = { /* language descriptor */
+    USB_STRING_DESCRIPTOR_HEADER(1),
+    0x0409 /* language index (0x0409 = US-English) */
 };
 #endif
 
