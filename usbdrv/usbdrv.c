@@ -739,6 +739,22 @@ uchar resetctr;
 
 /* ------------------------------------------------------------------------- */
 
+/* The stock delay functions go longer than most watchdog timeouts, this is a
+ * variant with a watchdog reset */
+static inline void _wdr_delay_cycles(__uint24 cycles)
+{
+    unsigned short w = cycles;
+    unsigned char d = cycles >> 16;
+    /* 6 cycles per loop, up to 100,663,295 cycles */
+    asm volatile(
+"1: sbiw      %0, 1\n"
+"   sbc       %1, __zero_reg__\n"
+"   wdr\n"
+"   brne      1b" : "+w"(w), "+d"(d));
+}
+
+#define wdr_delay_ms(n) _wdr_delay_cycles((unsigned long long) (n) * F_CPU / (6 * 1000))
+
 USB_PUBLIC void usbInit(void)
 {
 #ifdef USB_RESET_HOOK
@@ -762,6 +778,11 @@ USB_PUBLIC void usbInit(void)
     usbTxLen3 = USBPID_NAK;
 #endif
 #endif
+#if USB_CFG_USBINIT_CONNECT
+    usbDeviceDisconnect();
+    wdr_delay_ms(300);
+    usbDeviceConnect();
+#endif /* USB_CFG_USBINIT_CONNECT */
 }
 
 /* ------------------------------------------------------------------------- */
