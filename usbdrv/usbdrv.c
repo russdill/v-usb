@@ -644,6 +644,8 @@ uchar           isReset = !notResetState;
 #define irqModeEnabled() (0)
 #endif
 
+extern void USB_INTR_VECTOR(void);
+
 USB_PUBLIC void usbPoll(void)
 {
 schar   len;
